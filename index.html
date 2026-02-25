@@ -260,6 +260,7 @@
     </div>
 
     <div id="singerBar"></div>
+<div id="otherSubBar"></div>
 
     <div id="songList"></div>
     <div class="pagination" id="pagination"></div>
@@ -336,8 +337,32 @@
 </div>
 
 <script>
-  const apiUrl = "https://script.google.com/macros/s/AKfycbz9bbIGWFaXipJu08IAY5yKSy9tXCiU2qLB8-e1kVVEkfMxvhtQIECZmf1Qpvwni_tj/exec";
+function renderOtherSubBar(){
+  const bar = document.getElementById("otherSubBar");
+  bar.innerHTML = "";
 
+  if(category !== "其他"){
+    selectedSubtag = null;
+    return;
+  }
+
+  OTHER_SUBTAGS.forEach(tag=>{
+    const chip = document.createElement("span");
+    chip.className = "chip" + (tag===selectedSubtag ? " active" : "");
+    chip.textContent = tag;
+
+    chip.onclick = ()=>{
+      selectedSubtag = (selectedSubtag===tag ? null : tag);
+      listPage = 1;
+      renderSongsPage();
+    };
+
+    bar.appendChild(chip);
+  });
+}
+  const apiUrl = "https://script.google.com/macros/s/AKfycbz9bbIGWFaXipJu08IAY5yKSy9tXCiU2qLB8-e1kVVEkfMxvhtQIECZmf1Qpvwni_tj/exec";
+const OTHER_SUBTAGS = ["日","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
+let selectedSubtag = null;
   let allSongs = [];
   let token = localStorage.getItem("ktv_token") || null;
 
@@ -490,21 +515,27 @@ function goPage(name){
     }
   }
 
-  function getFilteredSongs(){
-    const q=(search.value||"").trim();
-    let data=[...allSongs];
+function getFilteredSongs(){
+  const q=(search.value||"").trim();
+  let data=[...allSongs];
 
-    if(category!=="全部") data=data.filter(s=>s.sheetName===category);
-    if(selectedSinger) data=data.filter(s=>(s["歌手"]||"")===selectedSinger);
+  if(category!=="全部") data=data.filter(s=>s.sheetName===category);
+  if(selectedSinger) data=data.filter(s=>(s["歌手"]||"")===selectedSinger);
 
-    if(q){
-      data=data.filter(s=>String(s["歌名"]||"").includes(q) || String(s["歌手"]||"").includes(q));
-    }
-    return data;
+  // ✅ 只有「其他」才套用子分類篩選
+  if(category==="其他" && selectedSubtag){
+    data = data.filter(s => String(s["子標籤"]||"").includes(selectedSubtag));
   }
+
+  if(q){
+    data=data.filter(s=>String(s["歌名"]||"").includes(q) || String(s["歌手"]||"").includes(q));
+  }
+  return data;
+}
 
   function renderSongsPage(){
     renderSingerBar();
+renderOtherSubBar();
 
     const data=getFilteredSongs();
     const totalPages=Math.max(1, Math.ceil(data.length/pageSize));
@@ -676,7 +707,6 @@ function goPage(name){
       if(res.status==="added"){
         closeAddSong();
         await loadAllSongs();
-document.getElementById("nav-home").classList.add("active");
         renderSongsPage();
         renderRankingPage();
         alert("新增成功，已回寫試算表");
