@@ -296,6 +296,7 @@
         <label>其他子標籤</label>
         <select id="mSubtagSelect">
           <option value="日">日</option>
+          <option value="韓">韓</option>
           <option value="英">英</option>
           <option value="Rap">Rap</option>
           <option value="情歌對唱">情歌對唱</option>
@@ -361,7 +362,7 @@ function renderOtherSubBar(){
   });
 }
   const apiUrl = "https://script.google.com/macros/s/AKfycbz9bbIGWFaXipJu08IAY5yKSy9tXCiU2qLB8-e1kVVEkfMxvhtQIECZmf1Qpvwni_tj/exec";
-const OTHER_SUBTAGS = ["日","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
+const OTHER_SUBTAGS = ["日","韓","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
 let selectedSubtag = null;
   let allSongs = [];
   let token = localStorage.getItem("ktv_token") || null;
@@ -732,3 +733,4 @@ renderOtherSubBar();
 
 </body>
 </html>
+
