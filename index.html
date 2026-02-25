@@ -31,17 +31,12 @@
   }
 
   .nav{ display:flex; gap:10px; flex-wrap:wrap; }
-  .nav button{
-    background:rgba(255,105,180,0.92); color:#fff; border:none;
-    padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:900;
-  }
-  .nav button.secondary{ background:rgba(255,255,255,0.12); }
 
   .container{ width:min(1100px, 92%); margin:18px auto; }
 
   .toolbar{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:14px 0; }
 
-  input[type="text"], input[type="number"], input[type="password"]{
+  input[type="text"], input[type="number"], input[type="password"], select{
     background:#1b1b1b; border:1px solid #333; color:#fff;
     padding:10px 12px; border-radius:10px; outline:none;
   }
@@ -52,6 +47,27 @@
   }
   .btn.gray{ background:#2a2a2a; }
   .btn:disabled{ opacity:.5; cursor:not-allowed; }
+
+  /* ✅ 分類按鈕：未選維持原本；hover 粉框黑底白字；選中粉底白字 */
+.tab-btn{
+  background:#2a2a2a;
+  color:#fff;
+  border:1px solid transparent;
+  padding:10px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:900;
+}
+.tab-btn:hover{
+  background:#111;
+  color:#fff;
+  border-color:#ff69b4;
+}
+.tab-btn.active{
+  background:#ff69b4;
+  color:#fff;
+  border-color:#ff69b4;
+}
 
   .song-card{
     background:#1e1e1e; border-radius:14px;
@@ -64,13 +80,28 @@
   .song-meta{ opacity:.85; font-size:13px; }
   .star{ color:gold; font-weight:900; margin-left:6px; }
 
-  .chip{
-    display:inline-block; background:#2a2a2a;
-    padding:6px 10px; border-radius:999px;
-    margin:4px 6px 0 0; cursor:pointer;
-    border:1px solid #3a3a3a; font-weight:900;
-  }
-  .chip.active{ border-color:#ff69b4; background:#2b1f27; }
+ /* ===== 歌手小分類：hover 黑底粉框白字；active 粉底白字 ===== */
+.chip{
+  display:inline-block;
+  background:#2a2a2a;
+  color:#fff;
+  padding:6px 10px;
+  border-radius:999px;
+  margin:4px 6px 0 0;
+  cursor:pointer;
+  border:1px solid transparent;
+  font-weight:900;
+}
+.chip:hover{
+  background:#111;
+  color:#fff;
+  border-color:#ff69b4;
+}
+.chip.active{
+  background:#ff69b4;
+  color:#fff;
+  border-color:#ff69b4;
+}
 
   .pagination{ display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin:16px 0 24px; }
 
@@ -97,7 +128,7 @@
   .field{ flex:1; min-width:220px; }
   .hint{ opacity:.8; font-size:13px; }
 
-  /* ✅ 子標籤輸入區拉長避免被吃字 */
+  /* ✅ 子標籤輸入區拉長避免被吃字（目前改成下拉，這段保留也不影響） */
   textarea.big{
     width:100%;
     min-height:88px;
@@ -118,13 +149,44 @@
   }
   .home-block h2{ margin:0 0 10px; font-size:18px; font-weight:900; }
 
-  /* ✅ 首頁🦭：置中、放大、頁面最下方、不在格子內 */
+  /* ✅ 首頁🦭：更大、置中、頁面最下方、不在格子內 */
   .seal-bottom{
     text-align:center;
-    font-size:64px;
-    margin:26px 0 46px;
+    font-size:92px; /* ← 變更：更大 */
+    margin:18px 0 56px;
   }
-</style>
+/* ===== 上方導覽：hover 黑底粉框白字；active 粉底白字 ===== */
+/* ===== 上方導覽按鈕 ===== */
+.nav-tab{
+  background: transparent;
+  color:#fff;
+  border:1px solid #fff;
+  padding:8px 14px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:900;
+  transition: all .2s ease;
+}
+.nav-tab:hover{
+  background:#111;
+  border-color:#ff69b4;
+  color:#fff;
+}
+.nav-tab.active{
+  background:#ff69b4;
+  border-color:#ff69b4;
+  color:#fff;
+}
+
+.nav-admin{
+  background: rgba(255,105,180,0.92);
+  color:#fff;
+  border:none;
+  padding:8px 12px;
+  border-radius:10px;
+  cursor:pointer;
+  font-weight:900;
+}</style>
 </head>
 
 <body>
@@ -138,12 +200,12 @@
       <div class="title">噗妮歌單</div>
     </div>
 
-    <div class="nav">
-      <button class="secondary" onclick="goPage('home')">首頁</button>
-      <button class="secondary" onclick="goPage('songs')">點歌</button>
-      <button class="secondary" onclick="goPage('ranking')">排行榜</button>
-      <button onclick="toggleLogin()">管理者</button>
-    </div>
+<div class="nav">
+  <button id="nav-home" class="nav-tab" onclick="goPage('home')">首頁</button>
+  <button id="nav-songs" class="nav-tab" onclick="goPage('songs')">點歌</button>
+  <button id="nav-ranking" class="nav-tab" onclick="goPage('ranking')">排行榜</button>
+  <button class="nav-admin" onclick="toggleLogin()">管理者</button>
+</div>
   </div>
 </div>
 
@@ -180,26 +242,24 @@
       <div style="margin-top:10px;">再次感謝各位支持~</div>
     </div>
 
-    <!-- ✅ 🦭 放在首頁最下方、置中、放大、不在格子內 -->
     <div class="seal-bottom">🦭</div>
   </div>
 
   <div class="page" id="page-songs">
     <div class="toolbar">
       <input type="text" id="search" placeholder="搜尋歌名或歌手" />
-      <button class="btn gray" onclick="setCategory('女歌手')">女歌手</button>
-      <button class="btn gray" onclick="setCategory('男歌手')">男歌手</button>
-      <button class="btn gray" onclick="setCategory('其他')">其他</button>
-      <button class="btn" onclick="setCategory('全部')">全部</button>
+
+      <!-- ✅ 分類按鈕：active 樣式由 JS 控制 -->
+      <button id="btn-female" class="tab-btn" onclick="setCategory('女歌手')">女歌手</button>
+      <button id="btn-male" class="tab-btn" onclick="setCategory('男歌手')">男歌手</button>
+      <button id="btn-other" class="tab-btn" onclick="setCategory('其他')">其他</button>
+      <button id="btn-all" class="tab-btn" onclick="setCategory('全部')">全部</button>
+
+      <!-- ✅ 只有管理者登入才會看到：新增歌曲 -->
+      <button id="btn-adminAdd" class="btn" style="display:none;" onclick="openAdminAddSong()">新增歌曲</button>
     </div>
 
     <div id="singerBar"></div>
-    <div id="subtagBar"></div>
-
-    <div class="toolbar" id="adminSingerTools" style="display:none;">
-      <div class="hint" id="adminSingerHint"></div>
-      <button class="btn" onclick="openAddSong()">＋ 新增歌曲</button>
-    </div>
 
     <div id="songList"></div>
     <div class="pagination" id="pagination"></div>
@@ -215,10 +275,34 @@
 
 </div>
 
+<!-- ✅ 新增歌曲 Modal：改成下拉選單 -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <h3>新增歌曲</h3>
-    <div class="hint" id="addSongTarget"></div>
+    <div class="hint" id="addSongTarget">（管理者）新增到試算表</div>
+
+    <div class="row">
+      <div class="field">
+        <label>分類（工作表）</label>
+        <select id="mSheet" onchange="onSheetChange()">
+          <option value="女歌手">女歌手</option>
+          <option value="男歌手">男歌手</option>
+          <option value="其他">其他</option>
+        </select>
+      </div>
+
+      <div class="field" id="subtagSelectField" style="display:none;">
+        <label>其他子標籤</label>
+        <select id="mSubtagSelect">
+          <option value="日">日</option>
+          <option value="英">英</option>
+          <option value="Rap">Rap</option>
+          <option value="情歌對唱">情歌對唱</option>
+          <option value="嗨歌/怪歌">嗨歌/怪歌</option>
+          <option value="舞蹈">舞蹈</option>
+        </select>
+      </div>
+    </div>
 
     <div class="row">
       <div class="field">
@@ -233,7 +317,6 @@
 
     <div class="row">
       <div class="field">
-        <!-- ✅ 星號改按鈕切換 -->
         <label>不熟標記</label>
         <button class="btn gray" id="starToggleBtn" onclick="toggleStar()">☆ 未標記</button>
         <div class="hint">按一下變 ★，再按一下取消</div>
@@ -245,31 +328,21 @@
       </div>
     </div>
 
-    <div class="row" id="subtagRow" style="display:none;">
-      <div class="field" style="min-width:100%;">
-        <label>子標籤（只給「其他」用）</label>
-        <!-- ✅ 改成 textarea + 拉長 -->
-        <textarea class="big" id="mSubtag" placeholder="日 / 英 / Rap / 情歌對唱 / 嗨歌/怪歌 / 舞蹈（可填多個，用逗號隔開）"></textarea>
-      </div>
-    </div>
-
     <div class="row" style="justify-content:flex-end;">
       <button class="btn gray" onclick="closeAddSong()">取消</button>
-      <button class="btn" onclick="submitAddSong()">送出新增</button>
+      <button class="btn" onclick="submitAdminAddSong()">送出新增</button>
     </div>
   </div>
 </div>
 
 <script>
   const apiUrl = "https://script.google.com/macros/s/AKfycbz9bbIGWFaXipJu08IAY5yKSy9tXCiU2qLB8-e1kVVEkfMxvhtQIECZmf1Qpvwni_tj/exec";
-  const OTHER_SUBTAGS = ["日","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
 
   let allSongs = [];
   let token = localStorage.getItem("ktv_token") || null;
 
   let category = "全部";
   let selectedSinger = null;
-  let selectedSubtag = null;
 
   let listPage = 1;
   const pageSize = 10;
@@ -280,15 +353,18 @@
   let starSelected = false;
 
   initLoginUI();
-  loadAllSongs().then(() => { renderSongsPage(); renderRankingPage(); });
+  loadAllSongs().then(() => { applyCategoryButtonState(); renderSongsPage(); renderRankingPage(); });
+document.getElementById("nav-home").classList.add("active");
 
   function initLoginUI(){
     if(token){
       logoutBtn.style.display="inline-block";
       loginStatus.textContent="已登入（不會自動登出，按登出才會登出）";
+      document.getElementById("btn-adminAdd").style.display = "inline-block";
     }else{
       logoutBtn.style.display="none";
       loginStatus.textContent="";
+      document.getElementById("btn-adminAdd").style.display = "none";
     }
   }
 
@@ -314,8 +390,7 @@
       if(res.status==="success"){
         token=res.token;
         localStorage.setItem("ktv_token", token);
-        logoutBtn.style.display="inline-block";
-        loginStatus.textContent="登入成功（不會自動登出，按登出才會登出）";
+        initLoginUI();
         loginBox.style.display="none";
         renderSongsPage();
         renderRankingPage();
@@ -329,8 +404,7 @@
   function logout(){
     localStorage.removeItem("ktv_token");
     token=null;
-    logoutBtn.style.display="none";
-    loginStatus.textContent="已登出";
+    initLoginUI();
     renderSongsPage();
     renderRankingPage();
   }
@@ -340,18 +414,49 @@
     allSongs = await res.json();
   }
 
-  function goPage(name){
-    document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-    document.getElementById("page-"+name).classList.add("active");
-    if(name==="songs") renderSongsPage();
-    if(name==="ranking") renderRankingPage();
+function goPage(name){
+
+  // 切換頁面
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+name).classList.add("active");
+
+  // 清除所有導覽 active
+  document.querySelectorAll(".nav-tab").forEach(btn=>{
+    btn.classList.remove("active");
+  });
+
+  // 設定目前頁面 active
+  const map = {
+    home:"nav-home",
+    songs:"nav-songs",
+    ranking:"nav-ranking"
+  };
+
+  if(map[name]){
+    document.getElementById(map[name]).classList.add("active");
+  }
+
+  if(name==="songs") renderSongsPage();
+  if(name==="ranking") renderRankingPage();
+}
+
+  function applyCategoryButtonState(){
+    const map = {
+      "女歌手": "btn-female",
+      "男歌手": "btn-male",
+      "其他": "btn-other",
+      "全部": "btn-all"
+    };
+    Object.values(map).forEach(id => document.getElementById(id).classList.remove("active"));
+    const id = map[category];
+    if(id) document.getElementById(id).classList.add("active");
   }
 
   function setCategory(c){
     category=c;
     selectedSinger=null;
-    selectedSubtag=null;
     listPage=1;
+    applyCategoryButtonState();
     renderSongsPage();
   }
 
@@ -385,49 +490,12 @@
     }
   }
 
-  function renderSubtagBar(){
-    // ✅ 只在「其他」分類且 category === "其他" 時顯示
-    subtagBar.innerHTML="";
-    if(category!=="其他") return;
-
-    const title=document.createElement("div");
-    title.className="hint";
-    title.textContent="其他分類子標籤：";
-    subtagBar.appendChild(title);
-
-    OTHER_SUBTAGS.forEach(t=>{
-      const chip=document.createElement("span");
-      chip.className="chip"+(t===selectedSubtag?" active":"");
-      chip.textContent=t;
-      chip.onclick=()=>{
-        selectedSubtag = (selectedSubtag===t)?null:t;
-        listPage=1;
-        renderSongsPage();
-      };
-      subtagBar.appendChild(chip);
-    });
-  }
-
-  function renderAdminSingerTools(){
-    if(token && category!=="全部" && selectedSinger){
-      adminSingerTools.style.display="flex";
-      adminSingerHint.textContent=`目前：${category} / ${selectedSinger}（可新增歌曲）`;
-    }else{
-      adminSingerTools.style.display="none";
-      adminSingerHint.textContent="";
-    }
-  }
-
   function getFilteredSongs(){
     const q=(search.value||"").trim();
     let data=[...allSongs];
 
     if(category!=="全部") data=data.filter(s=>s.sheetName===category);
     if(selectedSinger) data=data.filter(s=>(s["歌手"]||"")===selectedSinger);
-
-    if(category==="其他" && selectedSubtag){
-      data=data.filter(s=>String(s["子標籤"]||"").includes(selectedSubtag));
-    }
 
     if(q){
       data=data.filter(s=>String(s["歌名"]||"").includes(q) || String(s["歌手"]||"").includes(q));
@@ -437,8 +505,6 @@
 
   function renderSongsPage(){
     renderSingerBar();
-    renderSubtagBar();
-    renderAdminSingerTools();
 
     const data=getFilteredSongs();
     const totalPages=Math.max(1, Math.ceil(data.length/pageSize));
@@ -544,29 +610,29 @@
     .catch(()=>alert("+1 失敗"));
   }
 
-  function openAddSong(){
-    if(!token || category==="全部" || !selectedSinger) return;
-
-    addSongTarget.textContent=`新增到：${category} / ${selectedSinger}`;
-    mSongName.value="";
-    mSinger.value=selectedSinger;
-    mPlays.value=0;
-
-    // star toggle init
-    starSelected=false;
-    refreshStarBtn();
-
-    if(category==="其他"){
-      subtagRow.style.display="flex";
-      mSubtag.value = selectedSubtag || "";
-    }else{
-      subtagRow.style.display="none";
-      mSubtag.value = "";
+  // ===== 新增歌曲：改成 toolbar 的「新增歌曲」按鈕 =====
+  function openAdminAddSong(){
+    if(!token){
+      alert("請先管理者登入");
+      return;
     }
-
+    // reset
+    mSheet.value = "女歌手";
+    onSheetChange();
+    mSongName.value = "";
+    mSinger.value = "";
+    mPlays.value = 0;
+    starSelected = false;
+    refreshStarBtn();
     modalOverlay.style.display="flex";
   }
+
   function closeAddSong(){ modalOverlay.style.display="none"; }
+
+  function onSheetChange(){
+    const isOther = (mSheet.value === "其他");
+    document.getElementById("subtagSelectField").style.display = isOther ? "block" : "none";
+  }
 
   function toggleStar(){
     starSelected = !starSelected;
@@ -583,21 +649,23 @@
     }
   }
 
-  function submitAddSong(){
-    const songName=mSongName.value.trim();
-    const singer=mSinger.value.trim();
-    const plays=Number(mPlays.value||0);
-    const subtag=(category==="其他") ? (mSubtag.value.trim()||"") : "";
+  async function submitAdminAddSong(){
+    const sheetName = mSheet.value;
+    const songName = mSongName.value.trim();
+    const singer = mSinger.value.trim();
+    const plays = Number(mPlays.value||0);
 
     if(!songName || !singer){
       alert("請至少填：歌名、歌手");
       return;
     }
 
+    const subtag = (sheetName === "其他") ? (mSubtagSelect.value || "") : "";
+
     postJSON({
       action:"addSong",
       token,
-      sheetName:category,
+      sheetName,
       songName,
       singer,
       star: starSelected,
@@ -608,9 +676,13 @@
       if(res.status==="added"){
         closeAddSong();
         await loadAllSongs();
+document.getElementById("nav-home").classList.add("active");
         renderSongsPage();
         renderRankingPage();
-        alert("新增成功");
+        alert("新增成功，已回寫試算表");
+      }else if(res.status==="unauthorized"){
+        alert("登入已過期，請重新登入");
+        logout();
       }else{
         alert("新增失敗："+(res.status||"unknown"));
       }
