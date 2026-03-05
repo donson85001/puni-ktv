@@ -281,6 +281,7 @@
         <select id="mSubtagSelect">
           <option value="日">日</option>
           <option value="英">英</option>
+          <option value="韓">韓</option>
           <option value="Rap">Rap</option>
           <option value="情歌對唱">情歌對唱</option>
           <option value="嗨歌/怪歌">嗨歌/怪歌</option>
@@ -324,7 +325,7 @@
   // ✅ 換成你 Apps Script /exec（使用這份後端 Code.gs 部署）
   const apiUrl = "https://script.google.com/macros/s/AKfycbyIuW2aihuH8DD27HIo3fRHF8_VSVia7Ekx6a7Q2TKlHec8rU6ASy_Eb2IjslcVDHM1/exec";
 
-  const OTHER_SUBTAGS = ["日","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
+  const OTHER_SUBTAGS = ["日","英","韓","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
 
   let allSongs = [];
   let token = localStorage.getItem("ktv_token") || null;
@@ -843,3 +844,4 @@
 
 </body>
 </html>
+
