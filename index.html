@@ -281,7 +281,6 @@
         <select id="mSubtagSelect">
           <option value="日">日</option>
           <option value="英">英</option>
-          <option value="韓">韓</option>
           <option value="Rap">Rap</option>
           <option value="情歌對唱">情歌對唱</option>
           <option value="嗨歌/怪歌">嗨歌/怪歌</option>
@@ -325,7 +324,7 @@
   // ✅ 換成你 Apps Script /exec（使用這份後端 Code.gs 部署）
   const apiUrl = "https://script.google.com/macros/s/AKfycbyIuW2aihuH8DD27HIo3fRHF8_VSVia7Ekx6a7Q2TKlHec8rU6ASy_Eb2IjslcVDHM1/exec";
 
-  const OTHER_SUBTAGS = ["日","英","韓","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
+  const OTHER_SUBTAGS = ["日","英","Rap","情歌對唱","嗨歌/怪歌","舞蹈"];
 
   let allSongs = [];
   let token = localStorage.getItem("ktv_token") || null;
@@ -342,7 +341,9 @@
   // 男女歌手「其他」收納狀態
   let femaleOtherExpanded = false;
   let femaleOtherSelected = false;
-  let maleOtherExpanded = false;
+  
+  let femaleOtherListMode = false; // 女歌手：單曲歌手歌曲列表模式
+let maleOtherExpanded = false;
   let maleOtherSelected = false;
 
   // modal state
@@ -476,7 +477,11 @@
     maleOtherExpanded = false;
     maleOtherSelected = false;
 
-    applyCategoryButtonState();
+    
+
+    femaleOtherListMode = false;
+    maleOtherListMode = false;
+applyCategoryButtonState();
     renderSongsPage();
   }
 
@@ -509,7 +514,7 @@
       const singleSingers = singersAll.filter(n => (countMap.get(n)||0) === 1);
 
       let otherExpanded = isFemale ? femaleOtherExpanded : maleOtherExpanded;
-      let otherSelected = isFemale ? femaleOtherSelected : maleOtherSelected;
+      let otherSelected = isFemale ? (femaleOtherSelected || femaleOtherListMode) : (maleOtherSelected || maleOtherListMode);
 
       const setOtherState = (expanded, selected)=>{
         if(isFemale){ femaleOtherExpanded = expanded; femaleOtherSelected = selected; }
@@ -522,6 +527,7 @@
         chip.textContent=name;
         chip.onclick=()=>{
           setOtherState(false,false);
+          if(isFemale){ femaleOtherListMode=false; } else { maleOtherListMode=false; }
           selectedSinger = (selectedSinger===name)?null:name;
           listPage=1;
           renderSongsPage();
@@ -530,40 +536,27 @@
       });
 
       if(singleSingers.length>0){
-        const otherChip=document.createElement("span");
-        otherChip.className="chip"+(otherSelected ? " active" : "");
-        otherChip.textContent = otherExpanded ? `其他 ▲` : `其他 ▼`;
-        otherChip.onclick=()=>{
-          const nextExpanded = !otherExpanded;
-          setOtherState(nextExpanded, nextExpanded);
-          selectedSinger = null;
-          listPage=1;
-          renderSongsPage();
-        };
-        singerBar.appendChild(otherChip);
-
-        if(otherExpanded){
-          const wrap=document.createElement("div");
-          wrap.style.marginTop="8px";
-
-          singleSingers.forEach(name=>{
-            const chip=document.createElement("span");
-            chip.className="chip"+(name===selectedSinger ? " active" : "");
-            chip.textContent=name;
-            chip.onclick=()=>{
-              setOtherState(true,true);
-              selectedSinger = (selectedSinger===name)?null:name;
-              listPage=1;
-              renderSongsPage();
-            };
-            wrap.appendChild(chip);
-          });
-
-          singerBar.appendChild(wrap);
+      const otherChip=document.createElement("span");
+      otherChip.className="chip"+(otherSelected ? " active" : "");
+      // ✅ 點「其他」後直接顯示所有「只有一首歌」的歌曲列表，不顯示歌手子標題
+      const listMode = isFemale ? femaleOtherListMode : maleOtherListMode;
+      otherChip.textContent = listMode ? `其他（單曲歌手） ✓` : `其他（單曲歌手）`;
+      otherChip.onclick=()=>{
+        if(isFemale){
+          femaleOtherListMode = !femaleOtherListMode;
+        }else{
+          maleOtherListMode = !maleOtherListMode;
         }
-      }
+        // 不展開歌手子清單
+        setOtherState(false, (isFemale ? femaleOtherListMode : maleOtherListMode));
+        selectedSinger = null;
+        listPage=1;
+        renderSongsPage();
+      };
+      singerBar.appendChild(otherChip);
+    }
 
-      if(mainSingers.length===0 && singleSingers.length===0){
+    if(mainSingers.length===0 && singleSingers.length===0){
         singerBar.innerHTML = `<div class="hint">${category}目前沒有資料</div>`;
       }
       return;
@@ -612,6 +605,19 @@
     if(category!=="全部") data=data.filter(s=>s.sheetName===category);
     if(selectedSinger) data=data.filter(s=>(s["歌手"]||"")===selectedSinger);
 
+
+    // ✅ 女/男歌手：若選了「其他（單曲歌手）」就直接顯示所有只有一首歌的歌手之歌曲
+    if((category==="女歌手" && femaleOtherListMode) || (category==="男歌手" && maleOtherListMode)){
+      const bucket = allSongs.filter(s=>s.sheetName===category);
+      const countMap = new Map();
+      bucket.forEach(s=>{
+        const name = (s["歌手"]||"").trim();
+        if(!name) return;
+        countMap.set(name, (countMap.get(name)||0) + 1);
+      });
+      data = data.filter(s => (countMap.get((s["歌手"]||"").trim())||0) === 1);
+    }
+
     if(category==="其他" && selectedSubtag){
       data = data.filter(s => String(s["子標籤"]||"").includes(selectedSubtag));
     }
@@ -624,6 +630,8 @@
         return name.includes(qq) || singer.includes(qq);
       });
     }
+  // ⭐ 新增這行：依播放次數排序
+  data.sort((a,b)=>Number(b["播放次數"]||0)-Number(a["播放次數"]||0));
     return data;
   }
 
@@ -844,4 +852,3 @@
 
 </body>
 </html>
-
